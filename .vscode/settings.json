@@ -12,5 +12,10 @@
     "pylint.severity": {
         "convention": "Error"
     },
-    "pylint.args": ["--max-line-length=120"]
+    "pylint.args": [
+        "--max-line-length=120",
+        "--disable=consider-using-dict-items",
+        "--disable=invalid-name",
+        "--disable=consider-using-enumerate"
+    ]
 }

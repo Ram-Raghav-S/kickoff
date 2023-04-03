@@ -1,16 +1,14 @@
-"""Kickoff Project: controllers / records.py
+"""Kickoff Project: predictions.py
 
-This module contains functionality for predicting future premier league matches.
+This module contains functionality for predicting future premier league match results.
 
 This file is Copyright (c) 2023 Ram Raghav Sharma, Harshith Latchupatula, Vikram Makkar and Muhammad Ibrahim.
 """
 import numpy as np
 
-from models.league import League
-from models.match import Match
-from models.team import Team
-from utils.constants import Constants
-contants = Constants()
+from models import League
+from models import Match
+from models import Team
 
 
 def predict(home: str, away: str, season: str, league: League) -> float:
@@ -19,18 +17,17 @@ def predict(home: str, away: str, season: str, league: League) -> float:
 
     The returned number is a float to retain accuracy of the prediction.
 
-    Preconditions: 
+    Preconditions:
         - league.team_in_league(home_team)
         - league.team_in_league(away_team)
-        - home team has played in the season
-        - away team has played in the season
-        - season in constants.retrieve constants
+        - home in league.get_team_names(season)
+        - away in league.get_team_names(season)
+        - season is in the format '20XX-XX' between 2009-10 and 2018-19
     """
     # depth 4 enables fast predictions while maintaining accuracy
-    PREDICTION_DEPTH = 4
     home_team = league.get_team(home)
     away_team = league.get_team(away)
-    paths = _find_all_paths(home_team, away_team, season, PREDICTION_DEPTH)
+    paths = _find_all_paths(home_team, away_team, season, 4)
 
     home_goal_diffs = []
     weights = []
@@ -41,8 +38,7 @@ def predict(home: str, away: str, season: str, league: League) -> float:
         for match in path:
             home_team_goals = match.details[match.home_team.name].full_time_goals
             away_team_goals = match.details[match.away_team.name].full_time_goals
-            home_goal_diff = home_team_goals - away_team_goals
-            total_diff += home_goal_diff
+            total_diff += home_team_goals - away_team_goals
         home_goal_diffs.append(total_diff)
 
     predicted_home_goal_diff = np.average(home_goal_diffs, weights=weights)
@@ -50,8 +46,15 @@ def predict(home: str, away: str, season: str, league: League) -> float:
 
 
 def _find_all_paths(home_team: Team, away_team: Team, season: str, depth: int) -> list[list[Match]]:
-    """Return a list of all paths of matches of length <= depth, starting with a match 
+    """Return a list of all paths of matches of length <= depth, starting with a match
     where home_team plays at home and ending with a match where away_team plays away from home.
+
+    Preconditions:
+        - league.team_in_league(home_team.name)
+        - league.team_in_league(away_team.name)
+        - home_team.name in league.get_team_names(season)
+        - away_team.name in league.get_team_names(season)
+        - season is in the format '20XX-XX' between 2009-10 and 2018-19
     """
     paths: list[list[Match]] = []
     visited: set[str] = set()  # set of all team names that have been visited
@@ -69,12 +72,13 @@ def _find_all_paths(home_team: Team, away_team: Team, season: str, depth: int) -
 
         for match in team.matches:
             other_team = match.get_other_team(team)
-            if match.season != season or \
-                other_team.name in visited or \
-                (not at_home and (match.away_team == other_team)) or \
-                    (at_home and (match.home_team == other_team)):
-                continue
+            condition1 = match.season != season
+            condition2 = other_team.name in visited
+            condition3 = not at_home and (match.away_team == other_team)
+            condition4 = at_home and (match.home_team == other_team)
 
+            if any({condition1, condition2, condition3, condition4}):
+                continue
             path.append(match)
             dfs(other_team, path, not at_home)
             path.pop()

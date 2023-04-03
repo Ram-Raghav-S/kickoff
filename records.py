@@ -1,29 +1,23 @@
-"""Kickoff Project: controllers / records.py
+"""Kickoff Project: records.py
 
 This module contains functionality for finding various records in the datasets.
 
 This file is Copyright (c) 2023 Ram Raghav Sharma, Harshith Latchupatula, Vikram Makkar and Muhammad Ibrahim.
 """
-# pylint: disable=C0206
-# pylint: disable=C0200
-# pylint: disable=C0103
-from typing import Optional
 import heapq
-from controllers.basic import overall_winrate
+from typing import Optional
+from aggregation import overall_winrate
 
-from models.league import League
-from models.team import Team
-from utils.constants import Constants
-from utils.league import get_all_matches
-
-constant = Constants()
+from models import League
+from models import Team
+from helpers import get_all_matches
 
 
 def most_goals_scored(league: League, season: Optional[str] = None, topx: int = 4) -> list[tuple[str, int]]:
     """Return a list of the topx teams that scored the most goals in the whole league
 
     Preconditions:
-        - season is in the format '20XX-XX' between 2009-10 and 2018-19
+        - season is in the format '20XX-XX' between 2009-10 and 2018-19 or season is None
         - topx > 0
     """
     matches = get_all_matches(league)
@@ -51,7 +45,7 @@ def most_fairplay(league: League, season: Optional[str] = None, topx: int = 4) -
     statistics if provided. Otherwise, consider stastics from all seasons.
 
     Preconditions:
-        - season is in the format '20XX-XX' between 2009-10 and 2018-19
+        - season is in the format '20XX-XX' between 2009-10 and 2018-19 or season is None
         - topx > 0
     """
     matches = get_all_matches(league)
@@ -86,8 +80,7 @@ def most_fairplay(league: League, season: Optional[str] = None, topx: int = 4) -
 
     for team in team_offenses:
         fair_play_ratio = team_offenses[team][0] / team_offenses[team][1]
-        tup = (team, round(fair_play_ratio, 2))
-        offenses.append(tup)
+        offenses.append((team, round(fair_play_ratio, 2)))
 
     return sorted(offenses, key=lambda fairplay: fairplay[1])[:topx]
 
@@ -108,14 +101,13 @@ def highest_win_streaks(league: League, season: str, topx: int = 4) -> list[tupl
         highest_streak = 0
         current_streak = 0
         for i in range(len(matches)):
-            if matches[i].season == season:
-                if matches[i].result == team:
-                    current_streak += 1
-                    if i == len(matches) - 1 and current_streak > highest_streak:
-                        highest_streak = current_streak
-                elif highest_streak < current_streak:
+            if matches[i].season == season and matches[i].result == team:
+                current_streak += 1
+                if i == len(matches) - 1 and current_streak > highest_streak:
                     highest_streak = current_streak
-                    current_streak = 0
+            elif matches[i].result != team and highest_streak < current_streak:
+                highest_streak = current_streak
+                current_streak = 0
 
         streaks.append((name, highest_streak))
     return sorted(streaks, key=lambda streak: streak[1], reverse=True)[:topx]
@@ -140,6 +132,7 @@ def most_improved_teams(league: League, season: str, top_x: int) -> list[tuple[s
 
     Preconditions:
         - 0 < topx <= 20
+        - season is in the format '20XX-XX' between 2009-10 and 2018-19
     """
     team_improvements = []
     team_names = league.get_team_names(season)
@@ -158,7 +151,8 @@ def best_comebacks(league: League, season: Optional[str] = None, topx: int = 4) 
     up winning or drawing the game.
 
     Preconditions:
-        - season is in the format '20XX-XX' between 2009-10 and 2018-19
+        - season is in the format '20XX-XX' between 2009-10 and 2018-19 or season is None
+        - topx > 0
     """
     matches = get_all_matches(league)
     comebacks = []
@@ -214,7 +208,7 @@ def _calculate_improvement_statistic(team: Team, season: str) -> tuple():
     worst winrate, final winrate, and winrate improve are rounded to two decimal places
 
     Preconditions:
-        - season in contants.retrieve("VALID_SEASONS")
+        - season is in the format '20XX-XX' between 2009-10 and 2018-19
     """
     winrate_progression = _calculate_winrate_progression(team, season)
 
@@ -235,7 +229,7 @@ def _calculate_winrate_progression(team: Team, season: str) -> list[float]:
     a team plays in a season of the Premier League.
 
     Preconditions:
-        - season in contants.retrieve("VALID_SEASONS")
+        - season is in the format '20XX-XX' between 2009-10 and 2018-19
     """
     matches_won = 0
     matches_played = 0
@@ -258,10 +252,8 @@ def highest_win_rate(league: League, season: Optional[str] = None, topx: int = 4
     if provided. Otherwise, consider statistics from all seasons.
 
     Preconditions:
-        - season is in the format '20XX-XX' between 2009-10 and 2018-19
+        - season is in the format '20XX-XX' between 2009-10 and 2018-19 or season is None
         - topx > 0
-        - season is not None and topx <= 100
-        - season is None and topx <= 20
     """
     names = league.get_team_names()
     win_rates = []
@@ -270,15 +262,3 @@ def highest_win_rate(league: League, season: Optional[str] = None, topx: int = 4
             win_rates.append((name, round(overall_winrate(league, name, season), 2)))
 
     return sorted(win_rates, key=lambda win_rate: win_rate[1], reverse=True)[:topx]
-
-
-if __name__ == "__main__":
-    import python_ta
-
-    python_ta.check_all(
-        config={
-            "extra-imports": ["typing", "models.league"],
-            "allowed-io": [],
-            "max-line-length": 120,
-        }
-    )

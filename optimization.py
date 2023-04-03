@@ -1,17 +1,18 @@
-"""Kickoff Project: controllers / records.py
+"""Kickoff Project: optimization.py
 
-This module contains functionality for finding various records in the datasets.
+This module contains functionality for computing various optimization statistics.
 
 This file is Copyright (c) 2023 Ram Raghav Sharma, Harshith Latchupatula, Vikram Makkar and Muhammad Ibrahim.
 """
 
-from models.league import League
-from models.match import Match
-from utils.league import get_all_matches
-from controllers.basic import overall_winrate
+from typing import Optional
+from models import League
+from models import Match
+from helpers import get_all_matches
+from aggregation import overall_winrate
 
 
-def _compile_statistic_to_win_data(attr_name: str, matches: list[Match], team: str = None) -> dict[int, int]:
+def _compile_statistic_to_win_data(attr_name: str, matches: list[Match], team: Optional[str] = None) -> dict[int, int]:
     """Returns a dictionary of specific statistic counts to the number of wins that they amass.
 
     Preconditions
@@ -66,12 +67,12 @@ def _generate_optimal_range_data(
     return optimal_ranges
 
 
-def calculate_optimal_fouls(league: League, team: str = None, topx: int = 4) -> list[tuple[str, int, float]]:
+def calculate_optimal_fouls(league: League, team: Optional[str] = None, topx: int = 4) -> list[tuple[str, int, float]]:
     """Returns a list of the topx optimal foul ranges and the % of wins they account for.
 
     Preconditions
-        - team is a valid team
-        - 00 < topx
+        - team is None or league.team_in_league(team)
+        - topx > 0
     """
     if team is None:
         matches = get_all_matches(league)
@@ -85,12 +86,14 @@ def calculate_optimal_fouls(league: League, team: str = None, topx: int = 4) -> 
     return sorted_optimal_ranges[:topx]
 
 
-def calculate_optimal_yellow_cards(league: League, team: str = None, topx: int = 4) -> list[tuple[str, int, float]]:
+def calculate_optimal_yellow_cards(
+    league: League, team: Optional[str] = None, topx: int = 4
+) -> list[tuple[str, int, float]]:
     """Returns a list of the topx optimal yellow card ranges and the % of wins they account for.
 
     Preconditions
-        - team is a valid team
-        - 0 < topx
+        - team is None or league.team_in_league(team)
+        - topx > 0
     """
     if team is None:
         matches = get_all_matches(league)
@@ -111,7 +114,7 @@ def _generate_referee_win_stats(
     the number of games referred and total win percentage.
 
     Preconditions
-        - team is a valid team
+        - team is None or league.team_in_league(team)
     """
     matches = league.get_team(team).matches
 
@@ -139,8 +142,8 @@ def calculate_optimal_referees(league: League, team: str, topx: int = 4) -> list
     """Returns a list of the topx optimal referees and their game win percentage.
 
     Preconditions
-        - team is a valid team
-        - 0 < topx
+        - team is None or league.team_in_league(team)
+        - topx > 0
     """
     optimal_referees = _generate_referee_win_stats(league, team)
     sorted_optimal_ranges = sorted(optimal_referees, key=lambda a: a[3], reverse=True)
@@ -151,7 +154,7 @@ def calculate_fairest_referees(league: League, topx: int = 4) -> list[tuple[str,
     """Returns a list of the topx fairest referees and their game win percentage.
 
     Preconditions
-        - 0 < topx
+        - topx > 0
     """
     team_names = league.get_team_names()
 
@@ -176,18 +179,5 @@ def calculate_fairest_referees(league: League, topx: int = 4) -> list[tuple[str,
 
         if games_refereed >= 20:
             fairest_referees.append((referee, games_refereed, string_avg_discrepancy))
-
-    sorted_fairest_referees = sorted(fairest_referees, key=lambda a: abs(0 - float(a[2][1:])))
+    sorted_fairest_referees = sorted(fairest_referees, key=lambda a: abs(float(a[2][1:])))
     return sorted_fairest_referees[:topx]
-
-
-if __name__ == "__main__":
-    import python_ta
-
-    python_ta.check_all(
-        config={
-            "extra-imports": ["models.league"],
-            "allowed-io": [],
-            "max-line-length": 120,
-        }
-    )

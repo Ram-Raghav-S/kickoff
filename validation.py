@@ -1,12 +1,12 @@
-"""Kickoff Project: cmd / errors.py
+"""Kickoff Project: errors.py
 
 This module contains various error checking functions for the commands.py file.
 
 This file is Copyright (c) 2023 Ram Raghav Sharma, Harshith Latchupatula, Vikram Makkar and Muhammad Ibrahim.
 """
-import cmd.output as io
-from models.league import League
-from utils.constants import Constants
+import output as io
+from models import League
+from constants import Constants
 
 
 def validate_team(league: League, team_input: str) -> None:
@@ -36,15 +36,3 @@ def validate_topx(topx_input: int, topx_max: int = None) -> None:
     else:
         if not 0 < topx_input:
             io.error("The top x value should be greater than 0")
-
-
-if __name__ == "__main__":
-    import python_ta
-
-    python_ta.check_all(
-        config={
-            "extra-imports": ["cmd.output", "models.league", "utils.constants"],
-            "allowed-io": [],
-            "max-line-length": 120,
-        }
-    )

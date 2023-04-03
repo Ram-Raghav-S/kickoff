@@ -1,13 +1,11 @@
-"""Kickoff Project: cmd / output.py
+"""Kickoff Project: output.py
 
 This module contains helper functions to output various messages to the console using rich.
 
 This file is Copyright (c) 2023 Ram Raghav Sharma, Harshith Latchupatula, Vikram Makkar and Muhammad Ibrahim.
 """
-# pylint: disable=C0200
 
 from typing import Any
-import time
 from rich.console import Console
 from rich.table import Table
 from rich.style import Style
@@ -53,21 +51,3 @@ def table(title: str, headers: list[str], colors: list[str], data: list[tuple[An
     console = Console()
     console.line()
     console.print(output_table)
-
-
-def newline() -> None:
-    """Uses rich to print a newline to the command line"""
-    console = Console()
-    console.line()
-
-
-if __name__ == "__main__":
-    import python_ta
-
-    python_ta.check_all(
-        config={
-            "extra-imports": ["rich.console"],
-            "allowed-io": [],
-            "max-line-length": 120,
-        }
-    )

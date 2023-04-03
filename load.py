@@ -1,7 +1,6 @@
-"""Kickoff Project: utils / data.py
+"""Kickoff Project: load.py
 
-This file contains various functions that utilize the provided datasets and transform them into 
-pandas DataFrames and League graphs.
+This file contains various functions that load the dataset CSV files into a graph.
 
 This file is Copyright (c) 2023 Ram Raghav Sharma, Harshith Latchupatula, Vikram Makkar and Muhammad Ibrahim.
 """
@@ -11,13 +10,13 @@ import time
 import pandas as pd
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
-from utils.constants import Constants
-from models.league import League
-from models.match import Match, MatchDetails
+from constants import Constants
+from models import League
+from models import Match, MatchDetails
 
 
 def load_csv_files() -> League:
-    """Load all csv files in /assets into a League class and return it"""
+    """Loads all csv files in /assets into a League class and returns it"""
     with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"), transient=True) as progress:
         progress.add_task(description="Retrieving datasets...", total=None)
 
@@ -40,9 +39,8 @@ def load_csv_files() -> League:
     return league
 
 
-# @check_contracts
 def generate_pandas_dataframe(csv_file: str) -> pd.DataFrame:
-    """Initialize a DataTable class with the provided csv_file name and season.
+    """Initializes a DataTable class with the provided csv_file name and season.
 
     Preconditions:
         - csv_file is a valid csv file stored in the assets folder
@@ -52,13 +50,12 @@ def generate_pandas_dataframe(csv_file: str) -> pd.DataFrame:
     return dataframe
 
 
-# @check_contracts
 def convert_to_graph(dataframe: pd.DataFrame, league: League, season: str) -> None:
     """Populate the graph with the provided dataframe representing the match and overall season statistics
 
     Preconditions:
         - dataframe is a valid representation of a csv file stored in the assets folder
-        - season is a season string in the format '20XX-XX'
+        - season is in the format '20XX-XX' between 2009-10 and 2018-19
     """
     for i in range(len(dataframe.index)):
         ht_name = dataframe["HomeTeam"][i]
@@ -113,15 +110,3 @@ def convert_to_graph(dataframe: pd.DataFrame, league: League, season: str) -> No
         )
 
         league.add_match(ht_name, at_name, match)
-
-
-if __name__ == "__main__":
-    import python_ta
-
-    python_ta.check_all(
-        config={
-            "extra-imports": ["__future__", "dataclasses", "match"],
-            "allowed-io": [],
-            "max-line-length": 120,
-        }
-    )

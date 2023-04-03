@@ -1,13 +1,14 @@
-"""Kickoff Project: utils / league.py
+"""Kickoff Project: helpers.py
 
-This module contains helper functions for the League class.
+This module contains helper functions used throughout the program.
 
 This file is Copyright (c) 2023 Ram Raghav Sharma, Harshith Latchupatula, Vikram Makkar and Muhammad Ibrahim.
 """
-from models.match import Match
+from models import Match
+from models import League
 
 
-def get_all_matches(league) -> list[Match]:
+def get_all_matches(league: League) -> list[Match]:
     """Return a list of all the matches in the entire League class"""
     matches = []
 
