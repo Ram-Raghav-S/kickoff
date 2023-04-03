@@ -7,7 +7,6 @@ This file is Copyright (c) 2023 Ram Raghav Sharma, Harshith Latchupatula, Vikram
 from typing import Optional
 
 from models import League
-from helpers import get_all_matches
 
 
 def overall_winrate(league: League, team_name: str, season: Optional[str] = None) -> float:
@@ -68,10 +67,8 @@ def home_vs_away(league: League, team_name: str, season: Optional[str] = None) -
         draw_rate = (draw_rate / total_matches) * 100
 
     elif season is None:
-        matches = get_all_matches(league)
+        matches = league.get_team(team_name).matches
         for match in matches:
-            if season is not None and match.season != season:
-                continue
             if match.home_team == match.result:
                 home_win_rate += 1
             elif match.away_team == match.result:
