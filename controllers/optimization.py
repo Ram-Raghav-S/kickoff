@@ -4,7 +4,7 @@ This module contains functionality for finding various records in the datasets.
 
 This file is Copyright (c) 2023 Ram Raghav Sharma, Harshith Latchupatula, Vikram Makkar and Muhammad Ibrahim.
 """
-# pylint: disable=C0206
+
 from models.league import League
 from models.match import Match
 from utils.league import get_all_matches

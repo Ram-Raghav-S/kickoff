@@ -13,8 +13,6 @@ from python_ta.contracts import check_contracts
 from models.match import Match
 
 
-# @check_contracts
-@dataclass(repr=True)
 class Team:
     """A football team playing in a particular season of the Premier League.
 
@@ -31,6 +29,11 @@ class Team:
     name: str
     matches: list[Match]
     seasons: set[str]
+
+    def __init__(self, name: str, matches: list[Match], seasons: set[str]) -> None:
+        self.name = name
+        self.matches = matches
+        self.seasons = seasons
 
 
 if __name__ == "__main__":

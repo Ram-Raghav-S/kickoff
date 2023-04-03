@@ -6,14 +6,14 @@ This file is Copyright (c) 2023 Ram Raghav Sharma, Harshith Latchupatula, Vikram
 """
 
 from __future__ import annotations
+from typing import Optional
 from dataclasses import dataclass
+
 from python_ta.contracts import check_contracts
 
 import models.team as team
 
 
-# @check_contracts
-@dataclass(repr=True)
 class Match:
     """A Premier League match between two teams in a particular season.
 
@@ -37,7 +37,31 @@ class Match:
     away_team: team.Team
     order: int
     details: dict[str, MatchDetails]
-    result: team.Team | None
+    result: Optional[team.Team]
+
+    def __init__(self, season: str, home_team: team.Team, away_team: team.Team, order: int, details: dict[str, MatchDetails], result: Optional[team.Team]) -> None:
+        self.season = season
+        self.home_team = home_team
+        self.away_team = away_team
+        self.order = order
+        self.details = details
+        self.result = result
+
+    def get_other_team(self, team: team.Team) -> team.Team:
+        """Return the other team that played in this match.
+        
+        Preconditions:
+            - team in {self.home_team, self.away_team}
+        """
+        if team == self.home_team:
+            return self.away_team
+        else:
+            return self.home_team
+
+    def __repr__(self) -> str:
+        return f"home: {self.home_team.name} vs away: {self.away_team.name}"
+    
+
 
 
 # @check_contracts

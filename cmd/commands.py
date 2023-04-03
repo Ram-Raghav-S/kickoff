@@ -14,7 +14,7 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 import typer
 
 from utils import constants, data
-from controllers import basic, records, optimization
+from controllers import basic, records, optimization, predictions
 
 league = data.load_csv_files()
 constants = constants.Constants()
@@ -44,11 +44,13 @@ def winrate(
         winrate_percent = round(basic.overall_winrate(league, team, season), 2)
 
         if season is None:
-            display_str = f"{team}'s winrate across all Premier League seasons is {winrate_percent}%."
+            display_str = f"[yellow]{team}'s[/yellow] winrate across all Premier League seasons is {winrate_percent}%."
         else:
-            display_str = f"{team}'s winrate in the {season} season is {winrate_percent}%."
+            display_str = (
+                f"[yellow]{team}'s[/yellow] winrate in the [magenta]{season}[/magenta] season is {winrate_percent}%."
+            )
 
-    io.info(message=display_str, color="dodger_blue1")
+    io.info(message=display_str, color="white")
 
 
 @app.command()
@@ -334,6 +336,43 @@ def optimalfouls(
 
 
 @app.command()
+def predict(
+    home: str = typer.Option(...),
+    away: str = typer.Option(...),
+    season: str = typer.Option(..., help="ex. 2009-10"),
+) -> None:
+    """Predict the outcome of a match in the 2019-20 season
+    between the home and away team based on data from the 2018-19 season.
+
+    Preconditions:
+        - season is in the format '20XX-XX' between 2009-10 and 2018-19
+        - home team took part in the season
+        - away team took part in the season
+    """
+    errors.validate_team(league, home)
+    errors.validate_team(league, away)
+    errors.validate_team_in_season(league, home, season)
+    errors.validate_team_in_season(league, away, season)
+    errors.validate_season(season)
+    with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"), transient=True) as progress:
+        progress.add_task("Compiling results...")
+        prediction = round(predictions.predict(home, away, season, league), 2)
+
+        prefix = "[yellow]Prediction: [/yellow]"
+        if prediction < 0:
+            display_str = (
+                prefix
+                + f"[cyan]{home}[/cyan] loses against [magenta]{away}[/magenta] with a {-prediction} goal difference."
+            )
+        else:
+            display_str = (
+                prefix
+                + f"[cyan]{home}[/cyan] wins against [magenta]{away}[/magenta] with a {prediction} goal difference."
+            )
+
+    io.info(message=display_str, color="white")
+
+
 def highestwinrates(
     season: str = typer.Option(default=None, help="ex. 2009-10"),
     topx: int = typer.Option(default=4, help="Enter the top x values to output"),
