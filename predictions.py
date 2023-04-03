@@ -25,23 +25,30 @@ def predict(home: str, away: str, season: str, league: League) -> float:
         - season is in the format '20XX-XX' between 2009-10 and 2018-19
     """
     # depth 4 enables fast predictions while maintaining accuracy
+    PREDICTION_DEPTH = 4
     home_team = league.get_team(home)
     away_team = league.get_team(away)
-    paths = _find_all_paths(home_team, away_team, season, 4)
+    paths = _find_all_paths(home_team, away_team, season, PREDICTION_DEPTH)
 
-    home_goal_diffs = []
+    goal_diffs = []
     weights = []
 
     for path in paths:
         weights.append(1 / len(path))
         total_diff = 0
-        for match in path:
-            home_team_goals = match.details[match.home_team.name].full_time_goals
-            away_team_goals = match.details[match.away_team.name].full_time_goals
-            total_diff += home_team_goals - away_team_goals
-        home_goal_diffs.append(total_diff)
+        for i, match in enumerate(path):
+            if i % 2 == 0:
+                left_team_goals = match.details[match.home_team.name].full_time_goals
+                right_team_goals = match.details[match.away_team.name].full_time_goals
+            else:
+                left_team_goals = match.details[match.away_team.name].full_time_goals
+                right_team_goals = match.details[match.home_team.name].full_time_goals
 
-    predicted_home_goal_diff = np.average(home_goal_diffs, weights=weights)
+            goal_diff = left_team_goals - right_team_goals
+            total_diff += goal_diff
+        goal_diffs.append(total_diff)
+
+    predicted_home_goal_diff = np.average(goal_diffs, weights=weights)
     return predicted_home_goal_diff
 
 
