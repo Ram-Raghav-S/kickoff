@@ -135,12 +135,10 @@ def homevsaway(
         progress.add_task("Compiling results...")
 
         home_vs_away = aggregation.home_vs_away(league, team, season)
-        if team is None and season is None:
-            title = "Home vs Away Winrates in the Premier League"
-        elif team is None and season is not None:
-            title = f"Home vs Away Winrates in the {season} Premier League Season"
-        else:
+        if season is not None:
             title = f"Home vs Away Winrates for {team} in the {season} Premier League Season"
+        else:
+            title = f"Home vs Away Winrates for {team} in the Premier League"
 
     io.table(
         title=title,
@@ -467,11 +465,13 @@ def predict(
         - home in league.get_team_names(season)
         - away in league.get_team_names(season)
     """
+    if home == away:
+        io.error("Home and away teams cannot be the same.")
     validate.validate_team(league, home)
     validate.validate_team(league, away)
+    validate.validate_season(season)
     validate.validate_team_in_season(league, home, season)
     validate.validate_team_in_season(league, away, season)
-    validate.validate_season(season)
 
     with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"), transient=True) as progress:
         progress.add_task("Compiling results...")
